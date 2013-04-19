@@ -202,6 +202,16 @@ class Key(object):
             elif key == 'expiry-date':
                 self.expiry_date = val
 
+    def seek(self, pos, **kwargs):
+        self.resp = None
+        if 'headers' in kwargs:
+            headers = kwargs.get('headers')
+            del kwargs['']
+        else:
+            headers = {}
+        headers['Range'] = "bytes={start}-{end}".format(start=pos, end="")
+        self.open_read(headers=headers, **kwargs)
+
     def open_read(self, headers=None, query_args='',
                   override_num_retries=None, response_headers=None):
         """
@@ -1719,3 +1729,9 @@ class Key(object):
             raise provider.storage_response_error(response.status,
                                                   response.reason,
                                                   response.read())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close(fast=True)
